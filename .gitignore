@@ -3,3 +3,7 @@ data
 *.pyc
 *.pth
 *.csv
+*.s
+images/
+*.zip
+*.out
