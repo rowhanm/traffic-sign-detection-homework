@@ -28,29 +28,31 @@ args = parser.parse_args()
 torch.manual_seed(args.seed)
 
 ### Data Initialization and Loading
-from data import initialize_data, data_transforms # data.py in the same folder
+from data import initialize_data, training_transforms, test_transforms # data.py in the same folder
 initialize_data(args.data) # extracts the zip files, makes a validation set
 
 train_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/train_images',
-                         transform=data_transforms),
+                         transform=training_transforms),
     batch_size=args.batch_size, shuffle=True, num_workers=1)
 val_loader = torch.utils.data.DataLoader(
     datasets.ImageFolder(args.data + '/val_images',
-                         transform=data_transforms),
+                         transform=test_transforms),
     batch_size=args.batch_size, shuffle=False, num_workers=1)
+
+device = torch.device('cuda')
 
 ### Neural Network and Optimizer
 # We define neural net in model.py so that it can be reused by the evaluate.py script
-from model import Net
-model = Net()
+from model import Net, ResNet34, ResNetLayer, ResNetBlock
+model = ResNet34(ResNetLayer, ResNetBlock).to(device)
 
-optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+optimizer = optim.Adam(model.parameters())
 
 def train(epoch):
     model.train()
     for batch_idx, (data, target) in enumerate(train_loader):
-        data, target = Variable(data), Variable(target)
+        data, target = Variable(data.to(device)), Variable(target.to(device))
         optimizer.zero_grad()
         output = model(data)
         loss = F.nll_loss(output, target)
@@ -66,7 +68,7 @@ def validation():
     validation_loss = 0
     correct = 0
     for data, target in val_loader:
-        data, target = Variable(data, volatile=True), Variable(target)
+        data, target = Variable(data.to(device), volatile=True), Variable(target.to(device))
         output = model(data)
         validation_loss += F.nll_loss(output, target, size_average=False).item() # sum up batch loss
         pred = output.data.max(1, keepdim=True)[1] # get the index of the max log-probability

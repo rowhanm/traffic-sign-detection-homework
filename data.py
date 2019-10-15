@@ -8,12 +8,17 @@ import torchvision.transforms as transforms
 # by default, we resize the images to 32 x 32 in size
 # and normalize them to mean = 0 and standard-deviation = 1 based on statistics collected from
 # the training set
-data_transforms = transforms.Compose([
+training_transforms = transforms.Compose([
     transforms.Resize((32, 32)),
     transforms.ToTensor(),
     transforms.Normalize((0.3337, 0.3064, 0.3171), ( 0.2672, 0.2564, 0.2629))
 ])
 
+test_transforms = transforms.Compose([
+    transforms.Resize((32, 32)),
+    transforms.ToTensor(),
+    transforms.Normalize((0.3337, 0.3064, 0.3171), ( 0.2672, 0.2564, 0.2629))
+])
 
 def initialize_data(folder):
     #train_zip = folder + '/train_images.zip'
