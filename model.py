@@ -22,7 +22,30 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
     
-    
+class Conv4Net(nn.Module):
+    def __init__(self):
+        super(Conv4Net, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=5)
+        self.conv2 = nn.Conv2d(32, 32, kernel_size=5)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=3)
+        self.conv4 = nn.Conv2d(64, 64, kernel_size=3)
+        self.fc1 = nn.Linear(64*8*8, 256)
+        self.fc2 = nn.Linear(256, nclasses)
+
+    def forward(self, x):
+        x = F.relu(self.conv1(x))
+        x = F.relu(self.conv2(x))
+        x = F.max_pool2d(x, 2)
+        x = F.dropout(x, training=self.training, p=0.25)
+        x = F.relu(self.conv3(x))
+        x = F.relu(self.conv4(x))
+        x = F.max_pool2d(x, 2)
+        x = F.dropout(x, training=self.training, p=0.25)
+        x = x.view(x.size(0), -1)
+        x = F.relu(self.fc1(x))
+        x = F.dropout(x, training=self.training, p=0.5)
+        x = self.fc2(x)
+        return F.log_softmax(x, dim=1)    
     
 class MultiScaleCNN(nn.Module):
     def __init__(self):
